@@ -52,7 +52,7 @@ export default function About({ route, navigation }) {
                     </View>
                     <Button title="Reset Photo" onPress={()=>[
                         setPhoto(null)
-                    ]}/>
+                    ]} />
                     <Button title="Done" onPress={()=>[
                         navigation.navigate("Home")
                     ]}/>

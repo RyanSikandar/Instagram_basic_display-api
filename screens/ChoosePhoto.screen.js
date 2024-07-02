@@ -1,61 +1,76 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Image } from "react-native";
-import { images } from "../assets/images";
-import { StyleSheet } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
-import { FlatList } from "react-native";
-import { getPictures } from "../api/api_calls";
+import { View, Text, Image, ActivityIndicator, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { getNextPictures } from "../api/api_calls";
 
-export default function ChoosePhoto({ route,navigation }) {
-    const { accessToken } = route.params;
-    const { chooseAPhoto } = route.params;
+export default function ChoosePhoto({ route, navigation }) {
+    const { accessToken, chooseAPhoto } = route.params;
     const [pictures, setPictures] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [next, setNext] = useState("");
+
+    const fetchPictures = async (token, next) => {
+        try {
+            setLoading(true);
+            const response = await getNextPictures(token, next);
+            console.log("API Response:", response);
+            if (response.paging && response.paging.cursors) {
+                setNext(response.paging.cursors.after);
+            } else {
+                setNext(null);
+            }
+            if (Array.isArray(response.data.data)) {
+                setPictures(prevPictures => [...prevPictures, ...response.data.data]);
+            } else {
+                console.error("Expected response.data to be an array");
+            }
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching pictures:", error);
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        console.log(accessToken, "accessToken");
-        //Fetching pictures
-        const fetchPictures = async () => {
-            try {
-                const response = await getPictures(accessToken);
-                setPictures(response);
-            } catch (error) {
-                console.error("Error fetching pictures:", error);
-            }
-        };
-        fetchPictures();
+        if (accessToken) {
+            setPictures([]);
+            fetchPictures(accessToken, '');
+        } else {
+            setPictures([]);
+        }
+    }, [accessToken]);
 
-    }, []);
-
-
-
+    const handleEndReached = () => {
+        if (next && !loading) {
+            fetchPictures(accessToken, next);
+        }
+    };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.headerText}>Upload your main photo</Text>
             <View style={styles.content}>
                 <View style={styles.box}>
                     <FlatList
-                    numColumns={3}
+                        numColumns={2}
                         data={pictures}
+                        onEndReached={handleEndReached}
+                        onEndReachedThreshold={0.5}
+                        columnWrapperStyle={{
+                            justifyContent: "space-between",
+                        }}
                         renderItem={({ item }) => (
                             <TouchableOpacity onPress={() => {
-                                console.log(item.media_url, "item");
-                                chooseAPhoto(item.media_url)
-                                //go back
-                                navigation.goBack()
-                                ;
-                                
-                                }}>
+                                chooseAPhoto(item.media_url);
+                                navigation.goBack();
+                            }}>
                                 <Image
                                     style={styles.image}
                                     source={{ uri: item.media_url }}
                                 />
                             </TouchableOpacity>
                         )}
-                       key={(item) => item.id}
+                        keyExtractor={(item) => item.id}
+                        ListFooterComponent={loading && <ActivityIndicator size="large" color="black" animating={loading} />}
                     />
-
                 </View>
             </View>
         </View>
@@ -66,21 +81,23 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#FFFFFF",
-        padding: 20,
+       
     },
     headerText: {
         fontSize: 18,
         fontWeight: "bold",
-        marginBottom: 20,
+        marginLeft: 50,
+        justifyContent: "center",
+        alignItems: "center",
     },
     content: {
-        flex: 1,
+      
+        width: "100%",
         justifyContent: "center",
         alignItems: "center",
     },
     box: {
-        width: 235,
-        height: 330,
+        width: "100%",
         backgroundColor: "#F1F1F1",
         borderRadius: 10,
         justifyContent: "center",
@@ -89,5 +106,6 @@ const styles = StyleSheet.create({
     image: {
         width: 200,
         height: 200,
+       
     },
 });

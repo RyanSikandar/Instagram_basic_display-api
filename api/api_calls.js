@@ -42,10 +42,10 @@ export const getPictures = async (accessToken) => {
 
 export const getNextPictures = async (accessToken, after) => {
     try {
-        const response = await axios.get(`https://graph.instagram.com/me/media?fields=id,media_type,media_url&access_token=${accessToken}%after=${after}`);
+        const response = await axios.get(`https://graph.instagram.com/me/media?fields=id,media_type,media_url&access_token=${accessToken}&after=${after}`);
     
         console.log(response.data, "response more pics");
-        return response.data;
+        return response;
     } catch (error) {
         console.error("Error fetching pictures:", error);
         throw error; 
