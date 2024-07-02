@@ -4,7 +4,7 @@ import { getAccessToken } from "../api/api_calls";
 import { images } from "../assets/images";
 
 export default function About({ route, navigation }) {
-    const [photo, setPhoto] = useState(null); // Default to null
+    const [photo, setPhoto] = useState(null);
     const { code } = route.params;
     const [accessToken, setAccessToken] = useState(null);
 
@@ -23,7 +23,7 @@ export default function About({ route, navigation }) {
     }, [code]);
 
     const handleChoosePhoto = (selectedPhoto) => {
-        setPhoto({ uri: selectedPhoto }); 
+        setPhoto({ uri: selectedPhoto });
     };
 
     return (
@@ -50,12 +50,12 @@ export default function About({ route, navigation }) {
                             </TouchableOpacity>
                         </View>
                     </View>
-                    <Button title="Reset Photo" onPress={()=>[
+                    <Button title="Reset Photo" onPress={() => [
                         setPhoto(null)
                     ]} />
-                    <Button title="Done" onPress={()=>[
+                    <Button title="Done" onPress={() => [
                         navigation.navigate("Home")
-                    ]}/>
+                    ]} />
                 </>
             ) : (
                 <View style={styles.loadingContainer}>
